@@ -14,10 +14,13 @@
 
 using json = nlohmann::json;
 
+static const double SCALING_FACTOR = 0.005;
+
 // Function to create a PoseArray message from a JSON file
 std::string createPoseArrayMessageFromJson(const std::string& jsonFilePath) {
   pose_array::PoseArray poseArray;
-  poseArray.set_topic("pose_array");
+  poseArray.set_topic("/pose_array");
+  poseArray.set_frame("world");
 
   // Open the JSON file
   std::ifstream jsonFile(jsonFilePath);
@@ -32,9 +35,9 @@ std::string createPoseArrayMessageFromJson(const std::string& jsonFilePath) {
   // Iterate through the JSON array and populate the PoseArray Protobuf message
   for (const auto& poseData : jsonData) {
     auto* pose = poseArray.add_poses();
-    pose->set_x(poseData["position"]["x"].get<double>());
-    pose->set_y(poseData["position"]["y"].get<double>());
-    pose->set_z(poseData["position"]["z"].get<double>());
+    pose->set_x(poseData["position"]["x"].get<double>() * SCALING_FACTOR);
+    pose->set_y(poseData["position"]["y"].get<double>() * SCALING_FACTOR);
+    pose->set_z(poseData["position"]["z"].get<double>() * SCALING_FACTOR);
     pose->set_qx(poseData["rotation"]["x"].get<double>());
     pose->set_qy(poseData["rotation"]["y"].get<double>());
     pose->set_qz(poseData["rotation"]["z"].get<double>());

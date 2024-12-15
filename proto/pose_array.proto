@@ -16,5 +16,6 @@ message Pose {
 // Represents a collection of Poses, with an extra field for the ROS topic
 message PoseArray {
     string topic = 1;       // ROS topic name
-    repeated Pose poses = 2; // List of poses (arbitrary length)
+    string frame = 2;       // Display frame
+    repeated Pose poses = 3; // List of poses (arbitrary length)
 }

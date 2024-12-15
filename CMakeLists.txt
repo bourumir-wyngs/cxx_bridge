@@ -12,11 +12,10 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcl_interfaces REQUIRED)
-find_package(rcl_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
-
+find_package(moveit_msgs REQUIRED)
 # Find Poco libraries
 find_package(Poco REQUIRED COMPONENTS Net Foundation)
 
@@ -43,7 +42,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Add gRPC and external library paths, if applicable
 include_directories(/usr/include)
-include_directories(/usr/include/grpcpp)
 
 # Define executables
 add_executable(main src/main.cpp ${PROTO_SRCS})
@@ -74,7 +72,7 @@ ament_target_dependencies(protobuf_server
         std_msgs
         geometry_msgs
         trajectory_msgs
-        rcl_interfaces
+        moveit_msgs
 )
 
 # Install targets

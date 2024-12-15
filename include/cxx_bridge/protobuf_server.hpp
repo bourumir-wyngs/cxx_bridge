@@ -6,6 +6,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
+#include <moveit_msgs/msg/display_trajectory.hpp>
 
 #include <string>
 #include <string_view>
@@ -24,5 +25,5 @@ public:
 private:
   // ROS publishers for PoseArray and JointTrajectory
   rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr m_poseArrayPublisher;
-  rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr m_jointTrajectoryPublisher;
+  rclcpp::Publisher<moveit_msgs::msg::DisplayTrajectory>::SharedPtr m_trajectoryPublisher;
 };
