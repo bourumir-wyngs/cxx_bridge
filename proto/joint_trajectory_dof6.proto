@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package joint_trajectory_dof6;
+
+// Represents a single step in a robot joint trajectory for 6 degrees of freedom
+message JointStepDof6 {
+  float j1 = 1; // Joint 1 rotation
+  float j2 = 2; // Joint 2 rotation
+  float j3 = 3; // Joint 3 rotation
+  float j4 = 4; // Joint 4 rotation
+  float j5 = 5; // Joint 5 rotation
+  float j6 = 6; // Joint 6 rotation
+}
+
+// Represents a collection of JointStepDof6, along with the ROS topic info
+message JointTrajectoryDof6 {
+  string topic = 1;                // ROS topic name
+  repeated JointStepDof6 steps = 2; // List of trajectory steps
+}

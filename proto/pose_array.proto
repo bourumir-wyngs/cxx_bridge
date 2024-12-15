@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package pose_array;
+
+// Represents a single Pose with position and orientation information
+message Pose {
+    double x = 1; // Position X
+    double y = 2; // Position Y
+    double z = 3; // Position Z
+    double qx = 4; // Quaternion X
+    double qy = 5; // Quaternion Y
+    double qz = 6; // Quaternion Z
+    double qw = 7; // Quaternion W
+}
+
+// Represents a collection of Poses, with an extra field for the ROS topic
+message PoseArray {
+    string topic = 1;       // ROS topic name
+    repeated Pose poses = 2; // List of poses (arbitrary length)
+}
