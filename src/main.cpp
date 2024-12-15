@@ -49,12 +49,39 @@ std::string createPoseArrayMessageFromJson(const std::string& jsonFilePath) {
 
   // Debug: Print serialized message size and content
   std::cout << "Serialized PoseArray message size: " << serializedMessage.size() << std::endl;
-  std::cout << "Serialized PoseArray message (hex): ";
-  for (unsigned char c : serializedMessage) {
-    printf("%02x ", c);
-  }
   std::cout << std::endl;
 
+
+  return serializedMessage;
+}
+
+std::string createJointTrajectoryMessageFullRotation() {
+  // Prepare the JointTrajectoryDof6 message
+  joint_trajectory_dof6::JointTrajectoryDof6 trajectory_msg;
+  trajectory_msg.set_topic("trajectory_topic");
+
+  // Add 360 steps to represent a full rotation of j1 in radians
+  const float step_increment = 2 * M_PI / 360.0f; // Each step in radians (equal division of 2π)
+
+  for (int step = 0; step < 360; ++step) {
+    auto* trajectory_step = trajectory_msg.add_steps();
+
+    trajectory_step->set_j1(step * step_increment); // Set j1 to the current angle in radians
+    trajectory_step->set_j2(M_PI_2);                 // Keep j2 at 90
+    trajectory_step->set_j3(0.0f);                 // Keep j3 at 0
+    trajectory_step->set_j4(0.0f);                 // Keep j4 at 0
+    trajectory_step->set_j5(0.0f);                 // Keep j5 at 0
+    trajectory_step->set_j6(0.0f);                 // Keep j6 at 0
+  }
+
+  // Serialize the Protobuf message to a string
+  std::string serializedMessage;
+  if (!trajectory_msg.SerializeToString(&serializedMessage)) {
+    throw std::runtime_error("Failed to serialize JointTrajectoryDof6 Protobuf message.");
+  }
+
+  // Debug: Print serialized message size
+  std::cout << "Serialized JointTrajectoryDof6 message size: " << serializedMessage.size() << std::endl;
 
   return serializedMessage;
 }
@@ -107,8 +134,16 @@ int main(int argc, char** argv) {
     }
 
     // Create and send PoseArray message from JSON file
+    std::cout << "[INFO] Creating and sending PoseArray message." << std::endl;
     std::string poseArrayMessage = createPoseArrayMessageFromJson(jsonFilePath);
     sendMessage(serverAddress, serverPort, POSE_ARRAY_MESSAGE, poseArrayMessage);
+
+    // Create and send JointTrajectoryDof6 message with full rotation
+    std::cout << "[INFO] Creating and sending JointTrajectoryDof6 message." << std::endl;
+    std::string jointTrajectoryMessage = createJointTrajectoryMessageFullRotation();
+    sendMessage(serverAddress, serverPort, JOINT_TRAJECTORY_MESSAGE, jointTrajectoryMessage);
+
+    std::cout << "[INFO] Messages sent successfully." << std::endl;
 
   } catch (const std::exception& ex) {
     std::cerr << "Error: " << ex.what() << std::endl;
