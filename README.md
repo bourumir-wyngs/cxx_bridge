@@ -1,136 +1,134 @@
+# Protobuf Server
 
-# cxx_bridge Project
+This project is a C++ server application that listens for incoming protobuf messages and processes them using **Poco C++ Libraries** and **ROS 2**.
 
-## Build Setup Instructions
-### 1. Required Dependencies
-- A C++ toolchain (e.g., GCC or Clang).
-- CMake (minimum required version 3.12).
-- Rust and Cargo (stable version).
-- gRPC and Protocol Buffers (ensure both are installed).
-- Python (optional, if additional scripts are required).
+## Features
 
-#### Installing gRPC and Protocol Buffers
-To install gRPC and Protocol Buffers, you can follow the official instructions:
+- Handles Protocol Buffers messages like `PoseArray` and `JointTrajectoryDof6`.
+- Publishes received data using ROS 2.
+- Implements graceful shutdown with signal handling (e.g., `Ctrl+C` for SIGINT).
+- Lightweight and extensible for additional protobuf message types.
 
+---
+
+## Dependencies
+
+This project relies on the following dependencies:
+
+1. **ROS 2 Humble**  
+   Follow the installation instructions for [ROS 2 Humble](https://docs.ros.org/en/humble/Installation.html).
+
+   **Note:** Make sure you source the ROS 2 environment in your terminal:
+   ```bash
+   source /opt/ros/humble/setup.bash
+   ```
+
+2. **Poco C++ Libraries**  
+   Install the Poco libraries for networking and utility support:
+   ```bash
+   sudo apt-get install libpoco-dev
+   ```
+
+3. **Protocol Buffers**  
+   Install the protobuf compiler and its C++ development libraries:
+   ```bash
+   sudo apt-get install protobuf-compiler libprotobuf-dev
+   ```
+
+4. **CMake**  
+   Install CMake for build configuration:
+   ```bash
+   sudo apt-get install cmake
+   ```
+
+5. **GCC or Clang with C++17+ Support**  
+   Ensure your compiler supports at least C++17. Install GCC:
+   ```bash
+   sudo apt-get install build-essential
+   ```
+
+---
+
+## Building the Project
+
+### Clone the Repository
+First, clone this repository:
 ```bash
-# Clone the gRPC repository
-git clone --recurse-submodules -b v1.57.0 https://github.com/grpc/grpc
-cd grpc
-
-# Install dependencies
-mkdir -p cmake/build
-cd cmake/build
-
-# Build and install Protocol Buffers
-cmake ../..
-make -j
-make install
-
-# Build and install gRPC
-cd ../..
-cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF .
-make -j
-make install
+git clone <repository_url> cxx_bridge
+cd cxx_bridge
 ```
 
-This will ensure that gRPC and Protocol Buffers are available for your `cxx_bridge` project.
-- Python (optional, if additional scripts are required).
-### 2. Steps to Configure and Run the Build Using CMake
-1. Clone the `cxx_bridge` repository:
-    ```bash
-    git clone https://github.com/your-organization/cxx_bridge.git
-    cd cxx_bridge
-    ```
-2. Install gRPC and Protocol Buffers if not already installed (see "Required Dependencies").
+### Build Steps
 
-3. Create a build directory and navigate into it:
-    ```bash
-    mkdir build
-    cd build
-    ```
-4. Configure the project using CMake. Ensure to define paths for gRPC and Protocol Buffers:
-    ```bash
-    cmake -DProtobuf_PROTOC_EXECUTABLE=/usr/local/bin/protoc \
-          -DGRPC_CPP_PLUGIN=/usr/local/bin/grpc_cpp_plugin \
-          ..
-    ```
-5. Build the project:
-    ```bash
-    cmake --build .
-    ```
-cd ../..
-### 3. Example Commands for Building and Running the Project
-To build the project:
+1. Create a build directory:
+   ```bash
+   mkdir build
+   cd build
+   ```
+
+2. Configure the project using `cmake`:
+   ```bash
+   cmake ..
+   ```
+
+3. Build the project:
+   ```bash
+   cmake --build . --target protobuf_server
+   ```
+
+After the build completes, the `protobuf_server` binary will be available in the `build` folder.
+
+---
+
+## Running the Server
+
+To execute the server, run the following command:
 ```bash
-cmake -S . -B build -DProtobuf_PROTOC_EXECUTABLE=/usr/local/bin/protoc \
-                        -DGRPC_CPP_PLUGIN=/usr/local/bin/grpc_cpp_plugin
-cmake --build build
+./protobuf_server <port>
 ```
 
-To run the project:
+### Example:
+Run the server on port `8080`:
 ```bash
-./build/cxx_bridge
+./protobuf_server 8080
 ```
 
-### 4. Using gRPC in the `cxx_bridge` Project
-Make sure to define `.proto` files for your gRPC services. Use the following command to generate the gRPC code:
-```bash
-protoc --grpc_out=. --plugin=protoc-gen-grpc=/usr/local/bin/grpc_cpp_plugin service_name.proto
-protoc --cpp_out=. service_name.proto
-```
-Add the generated code into your `cxx_bridge` project, and ensure `CMakeLists.txt` includes the necessary gRPC libraries:
-```cmake
-find_package(gRPC CONFIG REQUIRED)
-find_package(Protobuf CONFIG REQUIRED)
-add_executable(cxx_bridge main.cpp generated_code.cpp)
-target_link_libraries(cxx_bridge PRIVATE gRPC::grpc++ protobuf::libprotobuf)
-```
-    cd cxx_bridge
-    ```
-2. Install gRPC and Protocol Buffers if not already installed (see "Required Dependencies").
+---
 
-3. Create a build directory and navigate into it:
-    ```bash
-    mkdir build
-    cd build
-    ```
-4. Configure the project using CMake. Ensure to define paths for gRPC and Protocol Buffers:
-    ```bash
-    cmake -DProtobuf_PROTOC_EXECUTABLE=/usr/local/bin/protoc \
-          -DGRPC_CPP_PLUGIN=/usr/local/bin/grpc_cpp_plugin \
-          ..
-    ```
-5. Build the project:
-    ```bash
-    cmake --build .
-    ```
-    ```
-### 3. Example Commands for Building and Running the Project
-To build the project:
-```bash
-cmake -S . -B build -DProtobuf_PROTOC_EXECUTABLE=/usr/local/bin/protoc \
-                        -DGRPC_CPP_PLUGIN=/usr/local/bin/grpc_cpp_plugin
-cmake --build build
-```
+## Generating Protobuf Files (if needed)
 
-To run the project (if applicable):
-```bash
-./build/<executable-name>
-```
+If you modify or add `.proto` files, use the following commands to generate the C++ source files:
 
-### 4. Using gRPC in the Project
-Make sure to define `.proto` files for your gRPC services. Use the following command to generate the gRPC code:
-```bash
-protoc --grpc_out=. --plugin=protoc-gen-grpc=/usr/local/bin/grpc_cpp_plugin <your-service>.proto
-protoc --cpp_out=. <your-service>.proto
-```
-Add the generated code into your project, and ensure CMakeLists.txt includes the necessary gRPC libraries:
-```cmake
-find_package(gRPC CONFIG REQUIRED)
-find_package(Protobuf CONFIG REQUIRED)
-add_executable(<your-target> <generated-files>)
-target_link_libraries(<your-target> PRIVATE gRPC::grpc++ protobuf::libprotobuf)
-```
-```
+1. Generate protobuf definitions:
+   ```bash
+   protoc --cpp_out=. <file_name>.proto
+   ```
 
-Replace `<repository-url>` and `<executable-name>` with the actual repository URL and executable name respectively.
+2. Add generated `.pb.h` and `.pb.cc` files to the project CMake configuration for compilation.
+
+---
+
+## Troubleshooting
+
+### 1. **ROS 2 Environment Not Found**
+Ensure your ROS 2 environment is properly sourced:
+   ```bash
+   source /opt/ros/humble/setup.bash
+   ```
+
+### 2. **Missing Dependencies**
+Check the dependency list above and ensure everything is installed correctly.
+
+### 3. **Port Already in Use**
+If the port specified for the server is already in use, try starting the server with a different port.
+
+---
+
+## Notes
+
+- This server only supports the protobuf messages `PoseArray` and `JointTrajectoryDof6` for now. If you wish to extend it for more message types, update the protobuf definitions and add appropriate handlers in the code.
+- This project assumes compatibility with Linux environments. Steps may vary for macOS or Windows systems.
+
+---
+
+Let me know if you'd like further enhancements or examples added to the file!
