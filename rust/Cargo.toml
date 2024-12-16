@@ -2,6 +2,7 @@
 name = "rs-cxx-ros2-opw-bridge"
 version = "0.0.1"
 edition = "2021"
+description = "A bridge between ROS 2 messaging (ROS2 project) and Rust standalone client using simple Protocol Buffers protocol"
 repository = "https://github.com/bourumir-wyngs/cxx_bridge"
 
 keywords = [
