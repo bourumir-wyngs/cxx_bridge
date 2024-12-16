@@ -152,23 +152,35 @@ void runServer(int serverPort, RosSender &rosSender) {
 // Main entry point
 int main(int argc, char **argv) {
   try {
-    if (argc != 2) {
-      throw std::runtime_error("Usage: protobuf_server <port>");
+    // Default host and port
+    constexpr char DEFAULT_HOST[] = "127.0.0.1";
+    constexpr int DEFAULT_PORT = 5555;
+
+    // Determine the port
+    int serverPort = DEFAULT_PORT;
+    if (argc == 2) {
+      serverPort = std::stoi(argv[1]);
+      if (serverPort <= 0) {
+        throw std::runtime_error("Invalid port number.");
+      }
+    } else if (argc > 2) {
+      throw std::runtime_error("Usage: protobuf_server [port]");
     }
 
-    int serverPort = std::stoi(argv[1]);
-    if (serverPort <= 0) {
-      throw std::runtime_error("Invalid port number.");
-    }
-
+    // Signal handling
     std::signal(SIGINT, signalHandler);
     std::signal(SIGTERM, signalHandler);
 
+    // Initialize ROS 2
     rclcpp::init(argc, argv);
     auto rosSender = std::make_shared<RosSender>();
 
+    std::cout << "Starting server on host " << DEFAULT_HOST << " and port " << serverPort << "..." << std::endl;
+
+    // Run the server
     runServer(serverPort, *rosSender);
 
+    // Shutdown ROS 2
     rclcpp::shutdown();
   } catch (const std::exception &ex) {
     std::cerr << "[ERROR] " << ex.what() << std::endl;
