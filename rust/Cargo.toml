@@ -2,6 +2,20 @@
 name = "rs-cxx-ros2-opw-bridge"
 version = "0.0.1"
 edition = "2021"
+repository = "https://github.com/bourumir-wyngs/cxx_bridge"
+
+keywords = [
+    "protobuf",         # Because you're using Protobuf for serialization
+    "ros",
+    "ros2",
+    "robotics",
+    "networking"
+    ]
+
+categories = [
+    "network-programming",  # Because the library involves TCP communication
+    "science::robotics"
+]
 
 [dependencies]
 prost = "0.13.4"
