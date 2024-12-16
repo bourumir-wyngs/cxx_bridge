@@ -60,9 +60,9 @@ impl Sender {
     }
 
     /// Sends a pose message, taking an `Isometry3<f64>` as the pose
-    pub fn send_pose_message(&self, pose: Isometry3<f64>) -> Result<(), Error> {
+    pub fn send_pose_message(&self, poses: &Vec<Isometry3<f64>>) -> Result<(), Error> {
         // Create a PoseArray protobuf message from the provided pose
-        let message = create_pose_array_message(vec![pose]);
+        let message = create_pose_array_message(poses);
 
         // Use the general send_message function
         self.send_message(POSE_ARRAY_MESSAGE, message)
@@ -71,10 +71,10 @@ impl Sender {
     /// Sends a joint trajectory message, taking a vector of [f64; 6] as input
     pub fn send_joint_trajectory_message(
         &self,
-        trajectory_steps: Vec<[f64; 6]>,
+        steps: &Vec<[f64; 6]>,
     ) -> Result<(), Error> {
         // Create a JointTrajectoryDof6 protobuf message from the provided trajectory
-        let message = create_joint_trajectory_message(trajectory_steps);
+        let message = create_joint_trajectory_message(steps);
 
         // Use the general send_message function
         self.send_message(JOINT_TRAJECTORY_MESSAGE, message)
@@ -82,7 +82,7 @@ impl Sender {
 }
 
 /// Helper function to create a PoseArray protobuf message
-fn create_pose_array_message(pose_array: Vec<Isometry3<f64>>) -> Vec<u8> {
+fn create_pose_array_message(pose_array: &Vec<Isometry3<f64>>) -> Vec<u8> {
     let mut message = pose_array::PoseArray {
         topic: "pose_array".to_string(),
         frame: "world".to_string(),
@@ -109,7 +109,7 @@ fn create_pose_array_message(pose_array: Vec<Isometry3<f64>>) -> Vec<u8> {
 }
 
 /// Helper function to create a JointTrajectoryDof6 protobuf message
-fn create_joint_trajectory_message(trajectory_steps: Vec<[f64; 6]>) -> Vec<u8> {
+fn create_joint_trajectory_message(trajectory_steps: &Vec<[f64; 6]>) -> Vec<u8> {
     let mut message = joint_trajectory_dof6::JointTrajectoryDof6 {
         topic: "trajectory_topic".to_string(),
         steps: Vec::new(),
