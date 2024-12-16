@@ -1,33 +1,38 @@
 # Communication Format
 
-This document explains the communication protocol, including the format for messages exchanged between the client and the server.
+This document describes the communication protocol, including the format of messages exchanged between the client and server.
 
 ---
 
 ## Message Structure
 
-Each message sent to the server consists of the following components, serialized and sent in the specified order:
+Each message sent to the server follows the structure described below **in the exact order**:
 
-1. **Message Type (1 byte)**  
-   A single byte that indicates the type of message being sent. The following message types are supported:
+1. **Magic Sequence (3 bytes)**  
+   A unique sequence of bytes (`0xAA 0x55 0x01`) sent at the start of every message to allow the server to verify message integrity and identify valid communication.
+
+2. **Message Type (1 byte)**  
+   A single byte that identifies the type of message being sent.  
+   Supported message types include:
     - `0x01`: `PoseArray`
     - `0x02`: `JointTrajectoryDof6`
 
-   This byte allows the server to correctly determine how to parse the incoming data.
+   This type allows the server to correctly process the incoming payload.
 
-2. **Message Length (4 bytes)**  
-   The size of the serialized protobuf message, in bytes. This value is encoded in **big-endian (network byte order)**.  
-   The server uses this length to read the exact amount of data for the protobuf message.
+3. **Message Length (4 bytes)**  
+   A 4-byte integer representing the size (in bytes) of the serialized protobuf message (`Message Content`).  
+   - **Encoding:** Big-endian (network byte order)  
+   - This enables the server to read the exact amount of data for the `Message Content`.
 
-3. **Message Content (variable size)**  
-   The serialized Protocol Buffers (protobuf) message. The content depends on the message type specified in the first byte.
+4. **Message Content (variable size)**  
+   The serialized Protocol Buffers (protobuf) message. This data depends on the `Message Type`.
 
 ---
 
 ## Protobuf Message Definitions
 
 ### 1. PoseArray
-The `PoseArray` message contains a list of poses, each represented by a position and orientation.
+The `PoseArray` message contains a list of poses, each represented by position and orientation.
 
 ```protobuf
 syntax = "proto3";
@@ -44,12 +49,12 @@ message Pose {
 
 message PoseArray {
     string topic = 1;           // Topic name (e.g., "pose_array")
-    repeated Pose poses = 2;    // List of Pose messages
+    repeated Pose poses = 2;    // List of Pose messages (can be empty)
 }
 ```
 
 ### 2. JointTrajectoryDof6
-The `JointTrajectoryDof6` message represents a trajectory for a 6-DOF robotic arm, with each step defining the joint positions.
+The `JointTrajectoryDof6` message represents a robot arm trajectory. Each step consists of the target positions for all 6 joints.
 
 ```protobuf
 syntax = "proto3";
@@ -75,47 +80,69 @@ message JointTrajectoryDof6 {
 
 ### Message Sending Sequence
 
-1. **Construct the Message Content**  
-   Serialize the appropriate protobuf message (`PoseArray` or `JointTrajectoryDof6`) into a binary format.
+To ensure correct operation, messages must be constructed and sent **in the following order**:
 
-2. **Calculate the Message Length**  
-   Determine the size of the serialized protobuf message in bytes.
+1. **Construct the Serialized Payload**  
+   Prepare the serialized protobuf message (`PoseArray` or `JointTrajectoryDof6`) in binary format (e.g., using a protobuf library).
+
+2. **Prepare the Magic Sequence**  
+   Use the constant `MAGIC_NUMBER` (3 bytes: `0xAA 0x55 0x01`) for message verification.
 
 3. **Send the Message**  
    Transmit the following in sequence:
-    - The **message type** (1 byte)
-    - The **message length** (4 bytes, big-endian)
-    - The **serialized protobuf message** (variable size)
-
-### Example Workflow
-
-1. **Message Preparation Example**  
-   For a `PoseArray` message:
-    - Serialize the `PoseArray` using Protocol Buffers.
-    - Determine the size of the serialized message in bytes (e.g., 256 bytes).
-    - Assume the message type is `0x01`.
-
-   Data to send:  
-   `[0x01]` (1 byte) + `[0x00, 0x00, 0x01, 0x00]` (4 bytes, big-endian) + Protobuf binary data (256 bytes).
-
-2. **Sending the Message**  
-   Use the `sendMessage` function to encapsulate and transmit these components (refer to the provided code). The server will parse and handle the message accordingly.
+    - **Magic Sequence (3 bytes):** `0xAA 0x55 0x01`
+    - **Message Type (1 byte):** Identify the type of message (e.g., `0x01` for `PoseArray`)
+    - **Message Length (4 bytes):** Big-endian representation of the serialized payload size
+    - **Message Content (variable size):** Serialized protobuf binary content
 
 ---
 
-## Notes
+## Example
 
-### Error Handling
-- If the server receives invalid or corrupted data:
-    - It will discard the message.
-    - An error may be logged for debugging purposes.
+### PoseArray Example
 
-### Extending the Protocol
-Additional message types can be added by:
-- Creating new `.proto` message definitions.
-- Extending the communication protocol to include a unique message type identifier for the new message.
-- Updating the server's parsing logic to handle the new message type.
+Suppose we want to transmit a `PoseArray` with topic `"poses_example"` containing a single pose `(x: 1.0, y: 2.0, z: 3.0, qx: 0.0, qy: 1.0, qz: 0.0, qw: 1.0)`.
+
+1. **Magic Sequence:**  
+   `0xAA 0x55 0x01`
+
+2. **Message Type:**  
+   `0x01` (indicating this is a `PoseArray` message)
+
+3. **Serialized Protobuf Message:**  
+   Using the protobuf library, the serialized content might look like this (in raw binary form):  
+   `0x0A 0x0D 0x70 0x6F 0x73 0x65 0x73 0x5F 0x65 0x78 0x61 0x6D 0x70 0x6C 0x65 0x12 0x2A ...`  
+
+   Let's assume the payload's total size is **50 bytes**.
+
+4. **Message Length (4 bytes):**  
+   The length of the serialized protobuf message (`50 bytes`) in big-endian:  
+   `0x00 0x00 0x00 0x32`
+
+5. **Final Message** (in transmitted order):  
+   ```
+   0xAA 0x55 0x01  // Magic Sequence (3 bytes)
+   0x01            // Message Type (1 byte)
+   0x00 0x00 0x00 0x32  // Message Length (4 bytes, big-endian)
+   0x0A 0x0D 0x70 ...    // Message Content (variable size, 50 bytes in this example)
+   ```
 
 ---
 
-Let me know if you need further modifications or additional details!
+## Server Validation
+
+On receiving data, the server will follow these steps:
+
+1. **Verify the Magic Sequence:**  
+   Ensure the first 3 bytes match the predefined magic sequence (`0xAA 0x55 0x01`). If not, discard the message.
+
+2. **Read the Message Type (1 byte):**  
+   Use the message type to prepare for parsing the payload accordingly.
+
+3. **Read the Message Length (4 bytes):**  
+   Parse the next 4 bytes as the length (big-endian). This determines how many bytes to read for the message payload.
+
+4. **Read and Parse the Protobuf Message:**  
+   Read the remaining bytes in the payload based on the parsed length and deserialize the protobuf message based on its type.
+
+

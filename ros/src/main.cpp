@@ -1,6 +1,6 @@
+#include "cxx_bridge/MagicNumbers.h" // Include the magic number header
 #include "pose_array.pb.h"
 #include "joint_trajectory_dof6.pb.h"
-#include "cxx_bridge/message_types.h"
 
 #include <Poco/Net/StreamSocket.h>
 #include <Poco/Net/SocketAddress.h>
@@ -90,33 +90,54 @@ std::string createJointTrajectoryMessageFullRotation() {
 }
 
 // Function to send a message to the server
+/**
+ * Sends a message to the server.
+ *
+ * The message is sent in the following structure:
+ * 1. Magic Number (3 bytes): Used for validating the message format.
+ * 2. Message Type (1 byte): Identifies the type of message being sent (e.g., pose array, trajectory, etc.).
+ * 3. Message Size (4 bytes, big-endian): The size of the serialized message payload.
+ * 4. Message Payload: The actual serialized content of the message.
+ *
+ * @param serverAddress The IP address or hostname of the server.
+ * @param serverPort The port on which the server is listening.
+ * @param messageType A 1-byte identifier indicating the type of message to send.
+ * @param message The serialized payload of the message.
+ */
 void sendMessage(const std::string& serverAddress, int serverPort, char messageType, const std::string& message) {
   try {
+    // Step 1: Establish a connection to the server
     Poco::Net::SocketAddress socketAddress(serverAddress, serverPort);
     Poco::Net::StreamSocket socket(socketAddress);
 
-    // Send the message type (1 byte)
+    // Step 2: Send the predefined Magic Number (3 bytes)
+    socket.sendBytes(MAGIC_NUMBER.data(), MAGIC_NUMBER.size());
+
+    // Step 3: Send the Message Type (1 byte to specify the message format)
     socket.sendBytes(&messageType, sizeof(messageType));
 
-    // Step 1: Calculate the message size (in bytes)
+    // Step 4: Calculate the size of the serialized message payload
     uint32_t messageSize = message.size();
 
-    // Step 2: Convert the size to network byte order (big-endian)
+    // Convert the message size to network byte order (big-endian)
     uint32_t networkOrderSize = htonl(messageSize);
 
-    // Step 3: Send the size (4 bytes)
+    // Step 5: Send the Message Size (4 bytes, big-endian format)
     socket.sendBytes(&networkOrderSize, sizeof(networkOrderSize));
 
-    // Step 4: Send the serialized message
+    // Step 6: Send the actual Serialized Message Payload
     socket.sendBytes(message.data(), message.size());
 
+    // Log a success message after the data transmission
     std::cout << "Message sent successfully to " << serverAddress << ":" << serverPort << std::endl;
 
-    // Close the socket after sending
+    // Close the socket after sending the message
     socket.close();
   } catch (const Poco::Exception& ex) {
+    // Handle Poco-specific exceptions (e.g., network errors)
     std::cerr << "Poco Exception: " << ex.displayText() << std::endl;
   } catch (const std::exception& ex) {
+    // Handle standard C++ exceptions
     std::cerr << "Standard Exception: " << ex.what() << std::endl;
   }
 }

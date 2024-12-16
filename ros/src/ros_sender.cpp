@@ -37,7 +37,7 @@ void RosSender::sendPoseArray(const pose_array::PoseArray &poseArrayMessage) {
 void RosSender::sendJointTrajectory(
   const joint_trajectory_dof6::JointTrajectoryDof6 &jointTrajectoryMessage) {
 
-  printf("Sending DisplayTrajectory message based on joint trajectory.\n");
+  printf("Sending DisplayTrajectory message based on joint trajectory, %d steps.\n", jointTrajectoryMessage.steps_size() );
 
   // Create a DisplayTrajectory message
   moveit_msgs::msg::DisplayTrajectory displayRobotStateMsg;

@@ -1,4 +1,5 @@
-#include "cxx_bridge/message_types.h" // Include the message type constants
+#include "cxx_bridge/MagicNumbers.h" // Include the magic number header, message types
+
 #include <Poco/Net/ServerSocket.h>
 #include <Poco/Net/StreamSocket.h>
 #include <Poco/Exception.h>
@@ -92,18 +93,35 @@ void runServer(int serverPort, RosSender &rosSender) {
     while (running) {
       try {
         if (globalServerSocket->poll(Poco::Timespan(1, 0), Poco::Net::Socket::SELECT_READ)) {
+          // Accept incoming connection
           Poco::Net::StreamSocket clientSocket = globalServerSocket->acceptConnection();
           std::cout << "[INFO] Client connected: " << clientSocket.peerAddress().toString() << std::endl;
 
+          // Step 1: Read and verify the magic number
+          std::array<uint8_t, MAGIC_NUMBER.size()> receivedMagicNumber;
+          int bytesRead = clientSocket.receiveBytes(receivedMagicNumber.data(), receivedMagicNumber.size());
+
+          // Use structured binding in C++17+ to simplify comparisons
+          if (bytesRead != MAGIC_NUMBER.size() || receivedMagicNumber != MAGIC_NUMBER) {
+            std::cerr << "[ERROR] Invalid or missing magic number. Disconnecting client." << std::endl;
+            clientSocket.close();
+            continue; // Move to the next client connection
+          }
+
+          // Step 2: Read message type (1 byte)
           char messageType;
-          int bytesRead = clientSocket.receiveBytes(&messageType, sizeof(messageType));
+          bytesRead = clientSocket.receiveBytes(&messageType, sizeof(messageType));
           if (bytesRead != 1) {
             throw std::runtime_error("Failed to read message type");
           }
 
-          uint32_t messageSize = readMessageSize(clientSocket);
-          std::string serializedMessage = readFullMessage(clientSocket, messageSize);
+          // Step 3: Read message size (4 bytes)
+          uint32_t messageSize = readMessageSize(clientSocket); // Implemented elsewhere
 
+          // Step 4: Read the full message content (message size determines length)
+          std::string serializedMessage = readFullMessage(clientSocket, messageSize); // Implemented elsewhere
+
+          // Step 5: Process the message based on its type
           if (messageType == POSE_ARRAY_MESSAGE) {
             handlePoseArray(serializedMessage, rosSender);
           } else if (messageType == JOINT_TRAJECTORY_MESSAGE) {
@@ -112,6 +130,7 @@ void runServer(int serverPort, RosSender &rosSender) {
             std::cerr << "[ERROR] Unknown message type received." << std::endl;
           }
 
+          // Close the client connection
           clientSocket.close();
         }
       } catch (const Poco::TimeoutException &) {
@@ -123,14 +142,11 @@ void runServer(int serverPort, RosSender &rosSender) {
         }
       }
     }
-
-    std::cout << "[INFO] Server shutting down cleanly." << std::endl;
-    globalServerSocket = nullptr; // Clear the global server socket pointer
-  } catch (const Poco::Exception &ex) {
-    std::cerr << "[ERROR] Poco Exception: " << ex.displayText() << std::endl;
   } catch (const std::exception &ex) {
-    std::cerr << "[ERROR] Standard Exception: " << ex.what() << std::endl;
+    std::cerr << "[FATAL] Server encountered an unrecoverable error: " << ex.what() << std::endl;
   }
+
+  std::cout << "[INFO] Server shutting down." << std::endl;
 }
 
 // Main entry point

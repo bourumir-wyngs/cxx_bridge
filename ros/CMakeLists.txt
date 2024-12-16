@@ -28,10 +28,22 @@ find_package(nlohmann_json REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 
 # Add .proto files
+# Set the PROTO_FILES paths relative to ../proto
 set(PROTO_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/proto/pose_array.proto
-        ${CMAKE_CURRENT_SOURCE_DIR}/proto/joint_trajectory_dof6.proto
+        ${CMAKE_CURRENT_SOURCE_DIR}/../proto/pose_array.proto
+        ${CMAKE_CURRENT_SOURCE_DIR}/../proto/joint_trajectory_dof6.proto
 )
+
+# Ensure the path to imported Protobuf files includes ../proto
+set(PROTO_INCLUDE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}/../proto
+)
+
+# Add Protobuf compilation step (example based on common patterns)
+find_package(Protobuf REQUIRED)
+
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
+include_directories(${PROTO_INCLUDE_DIRS} ${Protobuf_INCLUDE_DIRS})
 
 # Generate Protobuf C++ code
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})

@@ -1,0 +1,11 @@
+[package]
+name = "rs-cxx-ros2-opw-bridge"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+prost = "0.13.4"
+nalgebra = "0.33"
+
+[build-dependencies]
+prost-build = "0.13"
