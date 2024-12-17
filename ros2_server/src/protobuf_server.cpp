@@ -158,12 +158,12 @@ int main(int argc, char **argv) {
 
     // Determine the port
     int serverPort = DEFAULT_PORT;
-    if (argc == 2) {
+    if (argc < 2) { // Ros is passing more parameters
       serverPort = std::stoi(argv[1]);
       if (serverPort <= 0) {
         throw std::runtime_error("Invalid port number.");
       }
-    } else if (argc > 2) {
+    } else if (argc < 2) {
       throw std::runtime_error("Usage: protobuf_server [port]");
     }
 
