@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<robot name="robot_with_goblet">
+
+  <!-- Virtual Joint -->
+  <virtual_joint name="virtual_world_joint" type="fixed"
+                 parent_frame="world" child_link="base_link"/>
+
+  <!-- Planning Groups -->
+  <group name="manipulator">
+    <chain base_link="base_link" tip_link="tool0"/>
+  </group>
+
+  <!-- End Effector -->
+  <end_effector name="gripper" parent_link="flange" group="manipulator">
+  </end_effector>
+
+  <!-- Disable Self-Collisions -->
+  <!-- Collisions disabled between world, goblet, and other static parts -->
+  <disable_collisions link1="world" link2="goblet_base" reason="always"/>
+  <disable_collisions link1="base" link2="base_link" reason="always"/>
+
+  <!-- Disable Collisions Between Adjacent Links -->
+  <disable_collisions link1="link_1" link2="link_2" reason="adjacent_links"/>
+  <disable_collisions link1="link_2" link2="link_3" reason="adjacent_links"/>
+  <disable_collisions link1="link_3" link2="link_4" reason="adjacent_links"/>
+  <disable_collisions link1="link_4" link2="link_5" reason="adjacent_links"/>
+  <disable_collisions link1="link_5" link2="link_6" reason="adjacent_links"/>
+
+</robot>
+
