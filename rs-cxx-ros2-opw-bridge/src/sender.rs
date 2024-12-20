@@ -1,5 +1,5 @@
 use prost::Message; // For Protobuf serialization
-use nalgebra::Isometry3; // For pose representation
+use nalgebra::{Isometry3, Quaternion, Translation3, UnitQuaternion}; // For pose representation
 use std::io::{Error, Write}; // For I/O operations
 use std::net::TcpStream; // For TCP communication
 
@@ -78,6 +78,35 @@ impl Sender {
 
         // Use the general send_message function
         self.send_message(JOINT_TRAJECTORY_MESSAGE, message)
+    }
+
+    pub fn send_pose_message32(&self, poses: &Vec<Isometry3<f32>>) -> Result<(), Error> {
+        // Convert Vec<Isometry3<f32>> to Vec<Isometry3<f64>>
+        let poses_f64: Vec<Isometry3<f64>> = poses
+            .iter()
+            .map(|p| {
+                // Extract translation components and convert them to f64
+                let translation = Translation3::new(
+                    p.translation.vector.x as f64,
+                    p.translation.vector.y as f64,
+                    p.translation.vector.z as f64,
+                );
+
+                // Extract rotation components (quaternion) and convert them to f64
+                let rotation = UnitQuaternion::from_quaternion(Quaternion::new(
+                    p.rotation.w as f64,
+                    p.rotation.i as f64,
+                    p.rotation.j as f64,
+                    p.rotation.k as f64,
+                ));
+
+                // Recreate Isometry3<f64>
+                Isometry3::from_parts(translation, rotation)
+            })
+            .collect();
+
+        // Delegate to the original `send_pose_message` method
+        self.send_pose_message(&poses_f64)
     }
 }
 
