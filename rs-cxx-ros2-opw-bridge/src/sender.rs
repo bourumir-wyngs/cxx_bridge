@@ -5,12 +5,12 @@ use std::net::TcpStream; // For TCP communication
 
 /// Define the Magic Number (3-byte sequence) that acts as a unique identifier
 /// for verifying the validity of client messages.
-pub const MAGIC_NUMBER: [u8; 3] = [0xAA, 0x55, 0x03];
+pub const MAGIC_NUMBER: [u8; 3] = [0xAA, 0x55, 0x04];
 
 /// Message type constants as ASCII bytes
 pub const POSE_ARRAY_MESSAGE: u8 = 0x01;
 pub const JOINT_TRAJECTORY_MESSAGE: u8 = 0x02;
-pub const POINT_CLOUD_MESSAGE: u8 = 0x04;
+pub const POINT_CLOUD_MESSAGE: u8 = 0x03;
 
 // Generated protobuf modules
 mod pose_array {
