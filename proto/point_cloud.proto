@@ -17,8 +17,7 @@ message PointCloud {
   uint32 red = 3; // Color component, red
   uint32 green = 4; // Color component, green
   uint32 blue = 5; // Color component, blue
+  uint32 alpha = 6; // Transparency
 
-  double marker_size = 6; // Marker size (same units as point coordinates)
-
-  repeated Point points = 7; // List of poses (arbitrary length)
+  repeated Point points = 100; // List of poses (arbitrary length)
 }

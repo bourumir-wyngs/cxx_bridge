@@ -100,7 +100,7 @@ void RosSender::sendPointCloud(const point_cloud::PointCloud& pointCloudMessage)
     // The point cloud is dense (i.e., all points are valid)
     rosPointCloud.is_dense = true;
 
-    // Define the fields in the PointCloud2 message (x, y, z, and rgb)
+    // Define the fields in the PointCloud2 message (x, y, z, and rgba)
     rosPointCloud.fields.resize(4);
 
     rosPointCloud.fields[0].name = "x";
@@ -120,15 +120,24 @@ void RosSender::sendPointCloud(const point_cloud::PointCloud& pointCloudMessage)
 
     rosPointCloud.fields[3].name = "rgb";
     rosPointCloud.fields[3].offset = 12; // Offset after z (4 bytes)
-    rosPointCloud.fields[3].datatype = sensor_msgs::msg::PointField::UINT32; // RGB is packed as uint32
+    rosPointCloud.fields[3].datatype = sensor_msgs::msg::PointField::UINT32; // RGBA packed
     rosPointCloud.fields[3].count = 1;
 
-    // Set the size of each point in bytes (x, y, z = 3x float32 = 12 bytes, rgb = 4 bytes -> total = 16)
+    // Set the size of each point in bytes (x, y, z = 3x float32 = 12 bytes, rgba = 4 bytes -> total = 16)
     rosPointCloud.point_step = 16;
     rosPointCloud.row_step = rosPointCloud.point_step * rosPointCloud.width;
 
     // Allocate space for the binary data
     rosPointCloud.data.resize(rosPointCloud.row_step);
+
+    // Calculate the uniform RGBA value once (per cloud)
+    uint8_t red = pointCloudMessage.red();
+    uint8_t green = pointCloudMessage.green();
+    uint8_t blue = pointCloudMessage.blue();
+    uint8_t alpha = pointCloudMessage.alpha(); // Uniform alpha for the entire cloud
+
+    // Pack RGBA into a single uint32
+    uint32_t rgba = (alpha << 24) | (red << 16) | (green << 8) | blue;
 
     // Populate the data
     uint8_t* ptr = rosPointCloud.data.data(); // Pointer to binary data buffer
@@ -146,9 +155,8 @@ void RosSender::sendPointCloud(const point_cloud::PointCloud& pointCloudMessage)
         memcpy(ptr, &z, sizeof(float));
         ptr += sizeof(float);
 
-        // RGB color (pack red, green, blue into a single uint32)
-        uint32_t rgb = (pointCloudMessage.red() << 16) | (pointCloudMessage.green() << 8) | (pointCloudMessage.blue());
-        memcpy(ptr, &rgb, sizeof(uint32_t));
+        // Use the pre-calculated uniform RGBA value
+        memcpy(ptr, &rgba, sizeof(uint32_t));
         ptr += sizeof(uint32_t);
     }
 

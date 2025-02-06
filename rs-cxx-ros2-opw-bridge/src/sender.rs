@@ -5,7 +5,7 @@ use std::net::TcpStream; // For TCP communication
 
 /// Define the Magic Number (3-byte sequence) that acts as a unique identifier
 /// for verifying the validity of client messages.
-pub const MAGIC_NUMBER: [u8; 3] = [0xAA, 0x55, 0x02];
+pub const MAGIC_NUMBER: [u8; 3] = [0xAA, 0x55, 0x03];
 
 /// Message type constants as ASCII bytes
 pub const POSE_ARRAY_MESSAGE: u8 = 0x01;
@@ -73,9 +73,9 @@ impl Sender {
         self.send_message(POSE_ARRAY_MESSAGE, message)
     }
 
-    pub fn send_point_cloud_message(&self, points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), marker: f32) -> Result<(), Error> {
+    pub fn send_point_cloud_message(&self, points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), transparency: f32) -> Result<(), Error> {
         // Create a PoseArray protobuf message from the provided pose
-        let message = create_point_cloud_message(points, color, marker);
+        let message = create_point_cloud_message(points, color, transparency);
 
         // Use the general send_message function
         self.send_message(POINT_CLOUD_MESSAGE, message)
@@ -123,14 +123,14 @@ impl Sender {
     }
 }
 
-fn create_point_cloud_message(points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), marker: f32) -> Vec<u8> {
+fn create_point_cloud_message(points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), transparency: f32) -> Vec<u8> {
     let message = pose_point_cloud::PointCloud {
         topic: "point_cloud".to_string(),
         frame: "world".to_string(),
         red: color.0 as u32,
         green: color.1 as u32,
         blue: color.2 as u32,
-        marker_size: marker as f64,
+        alpha: (transparency * 255.0) as u32,
         points:     points
             .iter()
             .map(|point| {
