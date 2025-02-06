@@ -100,7 +100,7 @@ void RosSender::sendPointCloud(const point_cloud::PointCloud& pointCloudMessage)
     // The point cloud is dense (i.e., all points are valid)
     rosPointCloud.is_dense = true;
 
-    // Define the fields in the PointCloud2 message (x, y, z, and rgba)
+    // Define the fields in the PointCloud2 message (x, y, z, and intensity)
     rosPointCloud.fields.resize(4);
 
     rosPointCloud.fields[0].name = "x";
@@ -118,29 +118,30 @@ void RosSender::sendPointCloud(const point_cloud::PointCloud& pointCloudMessage)
     rosPointCloud.fields[2].datatype = sensor_msgs::msg::PointField::FLOAT32;
     rosPointCloud.fields[2].count = 1;
 
-    rosPointCloud.fields[3].name = "rgb";
+    rosPointCloud.fields[3].name = "intensity";
     rosPointCloud.fields[3].offset = 12; // Offset after z (4 bytes)
-    rosPointCloud.fields[3].datatype = sensor_msgs::msg::PointField::UINT32; // RGBA packed
+    rosPointCloud.fields[3].datatype = sensor_msgs::msg::PointField::FLOAT32;
     rosPointCloud.fields[3].count = 1;
 
-    // Set the size of each point in bytes (x, y, z = 3x float32 = 12 bytes, rgba = 4 bytes -> total = 16)
-    rosPointCloud.point_step = 16;
+    // Set the size of each point in bytes (x, y, z, intensity = 4 x float32 plus 32 bytes rgb = 20 bytes)
+    rosPointCloud.point_step = 20;
     rosPointCloud.row_step = rosPointCloud.point_step * rosPointCloud.width;
 
     // Allocate space for the binary data
     rosPointCloud.data.resize(rosPointCloud.row_step);
 
+    // Populate the data
+    uint8_t* ptr = rosPointCloud.data.data(); // Pointer to binary data buffer
+
     // Calculate the uniform RGBA value once (per cloud)
     uint8_t red = pointCloudMessage.red();
     uint8_t green = pointCloudMessage.green();
     uint8_t blue = pointCloudMessage.blue();
-    uint8_t alpha = pointCloudMessage.alpha(); // Uniform alpha for the entire cloud
 
     // Pack RGBA into a single uint32
-    uint32_t rgba = (alpha << 24) | (red << 16) | (green << 8) | blue;
+    uint32_t rgb = (red << 16) | (green << 8) | blue;
 
-    // Populate the data
-    uint8_t* ptr = rosPointCloud.data.data(); // Pointer to binary data buffer
+    float intensity = pointCloudMessage.intensity();
 
     for (const auto& point : pointCloudMessage.points())
     {
@@ -154,11 +155,14 @@ void RosSender::sendPointCloud(const point_cloud::PointCloud& pointCloudMessage)
         ptr += sizeof(float);
         memcpy(ptr, &z, sizeof(float));
         ptr += sizeof(float);
+        memcpy(ptr, &intensity, sizeof(float));
+        ptr += sizeof(float);
 
         // Use the pre-calculated uniform RGBA value
-        memcpy(ptr, &rgba, sizeof(uint32_t));
+        memcpy(ptr, &rgb, sizeof(uint32_t));
         ptr += sizeof(uint32_t);
     }
+
 
     // Publish the PointCloud2 message
     m_pointCloudPublisher->publish(rosPointCloud);

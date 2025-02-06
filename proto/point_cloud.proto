@@ -4,9 +4,9 @@ package point_cloud;
 
 // Represents a point in point cloud
 message Point {
-  double x = 1; // Position X
-  double y = 2; // Position Y
-  double z = 3; // Position Z
+  float x = 1; // Position X
+  float y = 2; // Position Y
+  float z = 3; // Position Z
 }
 
 // Represents a collection of Poses, with an extra field for the ROS topic
@@ -14,10 +14,10 @@ message PointCloud {
   string topic = 1;       // ROS topic name
   string frame = 2;       // Display frame
 
-  uint32 red = 3; // Color component, red
-  uint32 green = 4; // Color component, green
-  uint32 blue = 5; // Color component, blue
-  uint32 alpha = 6; // Transparency
+  uint32 red = 3; // Color component, red (all map)
+  uint32 green = 4; // Color component, green (all map)
+  uint32 blue = 5; // Color component, blue (all map)
+  float intensity = 6; // Intensity (all map)
 
   repeated Point points = 100; // List of poses (arbitrary length)
 }

@@ -10,7 +10,7 @@ pub const MAGIC_NUMBER: [u8; 3] = [0xAA, 0x55, 0x03];
 /// Message type constants as ASCII bytes
 pub const POSE_ARRAY_MESSAGE: u8 = 0x01;
 pub const JOINT_TRAJECTORY_MESSAGE: u8 = 0x02;
-pub const POINT_CLOUD_MESSAGE: u8 = 0x03;
+pub const POINT_CLOUD_MESSAGE: u8 = 0x04;
 
 // Generated protobuf modules
 mod pose_array {
@@ -123,22 +123,22 @@ impl Sender {
     }
 }
 
-fn create_point_cloud_message(points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), transparency: f32) -> Vec<u8> {
+fn create_point_cloud_message(points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), intensity: f32) -> Vec<u8> {
     let message = pose_point_cloud::PointCloud {
         topic: "point_cloud".to_string(),
         frame: "world".to_string(),
         red: color.0 as u32,
         green: color.1 as u32,
         blue: color.2 as u32,
-        alpha: (transparency * 255.0) as u32,
+        intensity: intensity,
         points:     points
             .iter()
             .map(|point| {
                 // Convert to nalgebra's Point3<f64>
                 pose_point_cloud::Point {
-                    x: point.0 as f64,
-                    y: point.1 as f64,
-                    z: point.2 as f64,
+                    x: point.0,
+                    y: point.1,
+                    z: point.2,
                 }
             })
             .collect()
