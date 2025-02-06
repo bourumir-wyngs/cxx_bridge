@@ -1,8 +1,17 @@
-use nalgebra::{Isometry3, Translation3, UnitQuaternion};
+use nalgebra::{Isometry3, Point3, Translation3, UnitQuaternion};
 use rs_cxx_ros2_opw_bridge::sender::Sender;
 use std::vec;
 
+
 fn main() {
+    fn generate_points(center: Point3<f32>, radius: f32) -> Vec<(f32, f32, f32)> {
+        vec![
+            (center.x + radius, center.y, center.z),             // Point to the right
+            (center.x, center.y + radius, center.z),             // Point upward
+            (center.x - radius, center.y, center.z),             // Point to the left
+        ]
+    }
+
     let sender = Sender::new("127.0.0.1", 5555);
 
     // Send a pose message
@@ -24,4 +33,32 @@ fn main() {
     if let Err(e) = sender.send_joint_trajectory_message(&joint_trajectory) {
         eprintln!("Error sending joint trajectory message: {}", e);
     }
+
+    let red = (255, 0, 0);
+    let green = (0, 255, 0);
+    let blue = (0, 0, 255);
+
+    // Radius for points around each center
+    let radius = 0.2;
+
+    // Generate points
+    let red_points = generate_points(Point3::new(1.5, 0.0, 0.0), radius);
+    let green_points = generate_points(Point3::new(0.0, 1.6, 0.0), radius);
+    let blue_points = generate_points(Point3::new(0.0, 0.0, 1.7), radius);
+
+    // Send red point cloud
+    if let Err(e) = sender.send_point_cloud_message(&red_points, red, radius) {
+        eprintln!("Error sending red point cloud: {}", e);
+    }
+
+    // Send green point cloud
+    if let Err(e) = sender.send_point_cloud_message(&green_points, green, radius) {
+        eprintln!("Error sending green point cloud: {}", e);
+    }
+
+    // Send blue point cloud
+    if let Err(e) = sender.send_point_cloud_message(&blue_points, blue, radius) {
+        eprintln!("Error sending blue point cloud: {}", e);
+    }
+
 }

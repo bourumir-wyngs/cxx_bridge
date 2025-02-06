@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package point_cloud;
+
+// Represents a point in point cloud
+message Point {
+  double x = 1; // Position X
+  double y = 2; // Position Y
+  double z = 3; // Position Z
+}
+
+// Represents a collection of Poses, with an extra field for the ROS topic
+message PointCloud {
+  string topic = 1;       // ROS topic name
+  string frame = 2;       // Display frame
+
+  uint32 red = 3; // Color component, red
+  uint32 green = 4; // Color component, green
+  uint32 blue = 5; // Color component, blue
+
+  double marker_size = 6; // Marker size (same units as point coordinates)
+
+  repeated Point points = 7; // List of poses (arbitrary length)
+}

@@ -10,7 +10,8 @@ fn main() {
         .compile_protos(
             // The .proto files to compile
             &["../proto/joint_trajectory_dof6.proto",
-                "../proto/pose_array.proto"
+                "../proto/pose_array.proto",
+                "../proto/point_cloud.proto"
             ],
             // The directories to search for imports
             &["../proto"],
@@ -20,5 +21,6 @@ fn main() {
     // Ensure the build script reruns if these files change
     println!("cargo:rerun-if-changed=../proto/joint_trajectory_dof6.proto");
     println!("cargo:rerun-if-changed=../proto/pose_array.proto");
+    println!("cargo:rerun-if-changed=../proto/point_cloud.proto");
     println!("cargo:rerun-if-changed=../proto");
 }

@@ -4,16 +4,18 @@
 #include <Poco/Net/StreamSocket.h>
 #include <Poco/Exception.h>
 #include <iostream>
-#include <vector>
+
 #include <cstring>
-#include "pose_array.pb.h" // Protobuf PoseArray
-#include "joint_trajectory_dof6.pb.h" // Protobuf JointTrajectoryDof6
 #include "cxx_bridge/protobuf_server.hpp" // Include the RosSender class
 #include <rclcpp/rclcpp.hpp> // ROS 2 library
 
 #include <csignal>
 #include <atomic> // For thread-safe control flag
 #include <memory> // For std::shared_ptr
+
+#include "pose_array.pb.h" // Protobuf PoseArray
+#include "joint_trajectory_dof6.pb.h" // Protobuf JointTrajectoryDof6
+#include "point_cloud.pb.h" // Protobuf PoseArray
 
 std::atomic<bool> running(true); // Controls the server loop
 std::shared_ptr<Poco::Net::ServerSocket> globalServerSocket; // Shared global pointer to manage server socket
@@ -83,6 +85,15 @@ void handleJointTrajectoryDof6(const std::string &message, RosSender &rosSender)
   }
 }
 
+void handlePointCloud(const std::string &message, RosSender &rosSender) {
+  point_cloud::PointCloud pointCloud;
+  if (pointCloud.ParseFromString(message)) {
+    rosSender.sendPointCloud(pointCloud);
+  } else {
+    std::cerr << "[ERROR] Failed to parse PointCloud message." << std::endl;
+  }
+}
+
 // Server loop to process messages
 void runServer(int serverPort, RosSender &rosSender) {
   try {
@@ -126,6 +137,8 @@ void runServer(int serverPort, RosSender &rosSender) {
             handlePoseArray(serializedMessage, rosSender);
           } else if (messageType == JOINT_TRAJECTORY_MESSAGE) {
             handleJointTrajectoryDof6(serializedMessage, rosSender);
+          } else if (messageType == POINT_CLOUD_MESSAGE) {
+            handlePointCloud(serializedMessage, rosSender);
           } else {
             std::cerr << "[ERROR] Unknown message type received." << std::endl;
           }
