@@ -123,14 +123,14 @@ impl Sender {
     }
 }
 
-fn create_point_cloud_message(points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), intensity: f32) -> Vec<u8> {
+fn create_point_cloud_message(points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), alpha: f32) -> Vec<u8> {
     let message = pose_point_cloud::PointCloud {
         topic: "point_cloud".to_string(),
         frame: "world".to_string(),
         red: color.0 as u32,
         green: color.1 as u32,
         blue: color.2 as u32,
-        intensity: intensity,
+        alpha: alpha,
         points:     points
             .iter()
             .map(|point| {

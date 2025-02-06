@@ -17,7 +17,8 @@ message PointCloud {
   uint32 red = 3; // Color component, red (all map)
   uint32 green = 4; // Color component, green (all map)
   uint32 blue = 5; // Color component, blue (all map)
-  float intensity = 6; // Intensity (all map)
+
+  float alpha = 6; // Transparency (all map)
 
   repeated Point points = 100; // List of poses (arbitrary length)
 }
