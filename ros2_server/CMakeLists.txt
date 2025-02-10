@@ -16,6 +16,8 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(moveit_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+
 # Find Poco libraries
 find_package(Poco REQUIRED COMPONENTS Net Foundation)
 
@@ -86,6 +88,7 @@ ament_target_dependencies(protobuf_server
         geometry_msgs
         trajectory_msgs
         moveit_msgs
+        visualization_msgs
 )
 
 # Install targets

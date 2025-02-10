@@ -135,7 +135,7 @@ fn create_mesh_message(
     };
 
     let message = mesh::Mesh {
-        topic: "point_cloud".to_string(),
+        topic: topic.to_string(),
         frame: "world".to_string(),
         red: color.0 as u32,
         green: color.1 as u32,

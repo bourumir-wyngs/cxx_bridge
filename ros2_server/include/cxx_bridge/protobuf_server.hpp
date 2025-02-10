@@ -17,8 +17,11 @@ public:
   // Sends a PoseArray message
   void sendPoseArray(const pose_array::PoseArray& poseArrayMessage);
 
-  // Sends a PointCloud message
+  // Sends a Mesh message
   void sendMesh(const mesh::Mesh& pointCloudMessage);
+
+  // Sends a PointCloud message (mesh with no triangles)
+  void sendPointCloud(const mesh::Mesh& pointCloudMessage);
 
   // Sends a JointTrajectory message
   void sendJointTrajectory(const joint_trajectory_dof6::JointTrajectoryDof6& jointTrajectoryMessage);

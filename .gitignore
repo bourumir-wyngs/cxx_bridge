@@ -1,2 +1,9 @@
 .idea
 
+/rs-cxx-ros2-opw-bridge/build/COLCON_IGNORE
+*.log
+/rs-cxx-ros2-opw-bridge/install
+/rs-cxx-ros2-opw-bridge/log
+/rs-cxx-ros2-opw-bridge/build
+
+
