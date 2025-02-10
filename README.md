@@ -2,7 +2,7 @@ This is a project to bridge between Rust and ROS 2 universes, so that tools like
 
 A simple, ProtocolBuffers based format is used for messaging between Rust and ROS 2. It is described in data_format.md
 
-The git repository contains folders "ros" (ROS project) and "rust" that is the Rust crate. The Rust crate would build and run without its ROS partner, but just one side of the bridge makes little sense. 
+The git repository contains folders "ros2_server" (ROS project) and "rs-cxx-ros2-opw-bridge" that is the Rust crate. The Rust crate would build and run without its ROS partner, but just one side of the bridge makes little sense. The folder "ros2" contains a simple ROS2 project with URDF and RViz2 launch configuration.
 
 This crate aims for advanced users that build both ROS2 C++ and Rust projects. It is mainly intended as a development dependency of rs-opw-kinematics but may be suitable for other projects dealing with pose arrays and 6DOF robots.
 
