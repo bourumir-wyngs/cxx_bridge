@@ -2,7 +2,7 @@
 
 #include "pose_array.pb.h"
 #include "joint_trajectory_dof6.pb.h"
-#include "point_cloud.pb.h"
+#include "mesh.pb.h"
 
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
@@ -18,7 +18,7 @@ public:
   void sendPoseArray(const pose_array::PoseArray& poseArrayMessage);
 
   // Sends a PointCloud message
-  void sendPointCloud(const point_cloud::PointCloud& pointCloudMessage);
+  void sendMesh(const mesh::Mesh& pointCloudMessage);
 
   // Sends a JointTrajectory message
   void sendJointTrajectory(const joint_trajectory_dof6::JointTrajectoryDof6& jointTrajectoryMessage);

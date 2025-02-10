@@ -80,7 +80,7 @@ void RosSender::sendJointTrajectory(
     printf("Trajectory message published.\n");
 }
 
-void RosSender::sendPointCloud(const point_cloud::PointCloud& pointCloudMessage)
+void RosSender::sendMesh(const mesh::Mesh& pointCloudMessage)
 {
     printf("Sending PointCloud message with %d points.\n", pointCloudMessage.points_size());
 

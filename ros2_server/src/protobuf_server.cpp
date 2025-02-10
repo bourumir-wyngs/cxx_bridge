@@ -15,7 +15,7 @@
 
 #include "pose_array.pb.h" // Protobuf PoseArray
 #include "joint_trajectory_dof6.pb.h" // Protobuf JointTrajectoryDof6
-#include "point_cloud.pb.h" // Protobuf PoseArray
+#include "mesh.pb.h" // Protobuf PoseArray
 
 std::atomic<bool> running(true); // Controls the server loop
 std::shared_ptr<Poco::Net::ServerSocket> globalServerSocket; // Shared global pointer to manage server socket
@@ -86,11 +86,11 @@ void handleJointTrajectoryDof6(const std::string &message, RosSender &rosSender)
 }
 
 void handlePointCloud(const std::string &message, RosSender &rosSender) {
-  point_cloud::PointCloud pointCloud;
+  mesh::Mesh pointCloud;
   if (pointCloud.ParseFromString(message)) {
-    rosSender.sendPointCloud(pointCloud);
+    rosSender.sendMesh(pointCloud);
   } else {
-    std::cerr << "[ERROR] Failed to parse PointCloud message." << std::endl;
+    std::cerr << "[ERROR] Failed to parse Mesh message." << std::endl;
   }
 }
 
