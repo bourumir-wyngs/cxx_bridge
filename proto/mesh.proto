@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package point_cloud;
+package mesh;
 
 // Represents a point in point cloud
 message Point {
@@ -9,8 +9,14 @@ message Point {
   float z = 3; // Position Z
 }
 
+message Triangle {
+  uint32 a = 1;
+  uint32 b = 2;
+  uint32 c = 3;
+}
+
 // Represents a collection of Poses, with an extra field for the ROS topic
-message PointCloud {
+message Mesh {
   string topic = 1;       // ROS topic name
   string frame = 2;       // Display frame
 
@@ -20,5 +26,7 @@ message PointCloud {
 
   float alpha = 6; // Transparency (all map)
 
-  repeated Point points = 100; // List of poses (arbitrary length)
+  repeated Point points = 100; // Points
+  repeated Triangle triangles = 101; // Triangles (if it is a mesh). If it is a point cloud, zero length.
 }
+

@@ -1,24 +1,24 @@
-use prost::Message; // For Protobuf serialization
 use nalgebra::{Isometry3, Quaternion, Translation3, UnitQuaternion}; // For pose representation
+use prost::Message; // For Protobuf serialization
 use std::io::{Error, Write}; // For I/O operations
 use std::net::TcpStream; // For TCP communication
 
 /// Define the Magic Number (3-byte sequence) that acts as a unique identifier
 /// for verifying the validity of client messages.
-pub const MAGIC_NUMBER: [u8; 3] = [0xAA, 0x55, 0x04];
+pub const MAGIC_NUMBER: [u8; 3] = [0xAA, 0x55, 0x05];
 
 /// Message type constants as ASCII bytes
 pub const POSE_ARRAY_MESSAGE: u8 = 0x01;
 pub const JOINT_TRAJECTORY_MESSAGE: u8 = 0x02;
-pub const POINT_CLOUD_MESSAGE: u8 = 0x03;
+pub const MESH_MESSAGE: u8 = 0x03;
 
 // Generated protobuf modules
 mod pose_array {
     include!(concat!(env!("OUT_DIR"), "/pose_array.rs"));
 }
 
-mod pose_point_cloud {
-    include!(concat!(env!("OUT_DIR"), "/point_cloud.rs"));
+mod mesh {
+    include!(concat!(env!("OUT_DIR"), "/mesh.rs"));
 }
 
 mod joint_trajectory_dof6 {
@@ -41,11 +41,7 @@ impl Sender {
     }
 
     /// General function to send a message to the server
-    fn send_message(
-        &self,
-        message_type: u8,
-        message: Vec<u8>,
-    ) -> Result<(), Error> {
+    fn send_message(&self, message_type: u8, message: Vec<u8>) -> Result<(), Error> {
         let mut stream = TcpStream::connect((self.host.as_str(), self.port))?;
 
         // Step 1: Send the magic number (3 bytes)
@@ -73,19 +69,22 @@ impl Sender {
         self.send_message(POSE_ARRAY_MESSAGE, message)
     }
 
-    pub fn send_point_cloud_message(&self, points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), transparency: f32) -> Result<(), Error> {
+    pub fn send_point_cloud_message(
+        &self,
+        points: &Vec<(f32, f32, f32)>,
+        triangles: &Vec<(u32, u32, u32)>,
+        color: (u8, u8, u8),
+        transparency: f32,
+    ) -> Result<(), Error> {
         // Create a PoseArray protobuf message from the provided pose
-        let message = create_point_cloud_message(points, color, transparency);
+        let message = create_mesh_message(points, triangles, color, transparency);
 
         // Use the general send_message function
-        self.send_message(POINT_CLOUD_MESSAGE, message)
+        self.send_message(MESH_MESSAGE, message)
     }
 
     /// Sends a joint trajectory message, taking a vector of [f64; 6] as input
-    pub fn send_joint_trajectory_message(
-        &self,
-        steps: &Vec<[f64; 6]>,
-    ) -> Result<(), Error> {
+    pub fn send_joint_trajectory_message(&self, steps: &Vec<[f64; 6]>) -> Result<(), Error> {
         // Create a JointTrajectoryDof6 protobuf message from the provided trajectory
         let message = create_joint_trajectory_message(steps);
 
@@ -123,30 +122,50 @@ impl Sender {
     }
 }
 
-fn create_point_cloud_message(points: &Vec<(f32, f32, f32)>, color: (u8, u8, u8), alpha: f32) -> Vec<u8> {
-    let message = pose_point_cloud::PointCloud {
+fn create_mesh_message(
+    points: &Vec<(f32, f32, f32)>,
+    triangles: &Vec<(u32, u32, u32)>,
+    color: (u8, u8, u8),
+    alpha: f32,
+) -> Vec<u8> {
+    let topic = if points.is_empty() {
+        "point_cloud"
+    } else {
+        "mesh"
+    };
+
+    let message = mesh::Mesh {
         topic: "point_cloud".to_string(),
         frame: "world".to_string(),
         red: color.0 as u32,
         green: color.1 as u32,
         blue: color.2 as u32,
         alpha: alpha,
-        points:     points
+        points: points
             .iter()
             .map(|point| {
                 // Convert to nalgebra's Point3<f64>
-                pose_point_cloud::Point {
+                mesh::Point {
                     x: point.0,
                     y: point.1,
                     z: point.2,
                 }
             })
-            .collect()
-        ,
+            .collect(),
+        triangles: triangles
+            .iter()
+            .map(|point| mesh::Triangle {
+                a: point.0,
+                b: point.1,
+                c: point.2,
+            })
+            .collect(),
     };
     // Serialize the message into a vector of bytes
     let mut buf = Vec::new();
-    message.encode(&mut buf).expect("Failed to serialize PoseArray message.");
+    message
+        .encode(&mut buf)
+        .expect("Failed to serialize PoseArray message.");
     buf
 }
 
@@ -173,7 +192,9 @@ fn create_pose_array_message(pose_array: &Vec<Isometry3<f64>>) -> Vec<u8> {
 
     // Serialize the message into a vector of bytes
     let mut buf = Vec::new();
-    message.encode(&mut buf).expect("Failed to serialize PoseArray message.");
+    message
+        .encode(&mut buf)
+        .expect("Failed to serialize PoseArray message.");
     buf
 }
 

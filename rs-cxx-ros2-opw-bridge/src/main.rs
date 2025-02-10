@@ -48,17 +48,17 @@ fn main() {
     let blue_points = generate_points(Point3::new(0.0, 0.0, 1.7), radius);
 
     // Send red point cloud
-    if let Err(e) = sender.send_point_cloud_message(&red_points, red, transparency) {
+    if let Err(e) = sender.send_point_cloud_message(&red_points, &vec![], red, transparency) {
         eprintln!("Error sending red point cloud: {}", e);
     }
 
     // Send green point cloud
-    if let Err(e) = sender.send_point_cloud_message(&green_points, green, transparency) {
+    if let Err(e) = sender.send_point_cloud_message(&green_points, &vec![], green, transparency) {
         eprintln!("Error sending green point cloud: {}", e);
     }
 
     // Send blue point cloud
-    if let Err(e) = sender.send_point_cloud_message(&blue_points, blue, transparency) {
+    if let Err(e) = sender.send_point_cloud_message(&blue_points, &vec![], blue, transparency) {
         eprintln!("Error sending blue point cloud: {}", e);
     }
 

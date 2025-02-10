@@ -32,7 +32,7 @@ include_directories(${Protobuf_INCLUDE_DIRS})
 set(PROTO_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../proto/pose_array.proto
         ${CMAKE_CURRENT_SOURCE_DIR}/../proto/joint_trajectory_dof6.proto
-        ${CMAKE_CURRENT_SOURCE_DIR}/../proto/point_cloud.proto
+        ${CMAKE_CURRENT_SOURCE_DIR}/../proto/mesh.proto
 )
 
 # Ensure the path to imported Protobuf files includes ../proto
