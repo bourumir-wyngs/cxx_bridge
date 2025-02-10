@@ -8,6 +8,7 @@
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <moveit_msgs/msg/display_trajectory.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <visualization_msgs/msg/marker.hpp>
 
 class RosSender : public rclcpp::Node {
 public:
@@ -31,5 +32,6 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr m_poseArrayPublisher;
   rclcpp::Publisher<moveit_msgs::msg::DisplayTrajectory>::SharedPtr m_trajectoryPublisher;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_pointCloudPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr m_meshPublisher;
 
 };

@@ -19,6 +19,8 @@ RosSender::RosSender()
 
     m_pointCloudPublisher = this->create_publisher<sensor_msgs::msg::PointCloud2>(
         "point_cloud", 1000);
+
+    m_meshPublisher = this->create_publisher<visualization_msgs::msg::Marker>("mesh", 1000);
 }
 
 // Sends a PoseArray message
@@ -153,10 +155,7 @@ void RosSender::sendMesh(const mesh::Mesh& mesh)
     meshMarker.points.push_back(vertexC);
   }
 
-  // Publish the Marker
-  auto m_meshPublisher = this->create_publisher<visualization_msgs::msg::Marker>("mesh_marker", 10);
   m_meshPublisher->publish(meshMarker);
-
   printf("Mesh message with uniform color and alpha published.\n");
 }
 
